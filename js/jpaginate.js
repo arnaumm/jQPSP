@@ -1,4 +1,4 @@
-// jQPSP - jQuery Pagination System Plugin v0.2 19/02/2013 17:00
+// jQPSP - jQuery Pagination System Plugin v0.2 19/02/2013 18:45
 // based on jPaginate by Angel Grablev
 // Dual license under MIT and GPL
 
@@ -30,7 +30,11 @@ Options available:
             next10: ">>",
             prev10: "<<",
             active: "active",
-            pagination_class: "pagination"           
+            pagination_class: "pagination", 
+            show_next_prev: true,
+            show_next10_prev10: true,
+            show_first: false,
+            show_last: false
         };
 
         var options = $.extend(defaults, options);
@@ -81,14 +85,17 @@ Options available:
 
                 var items = "";
                 var nav = "";
+                var nav_array = new Array();
                 var next_num = new Array();
                 var prev_num = new Array();
                 
                 var start = "<div class='pagination pagination-centered'><ul id='pagination' class='"+options.pagination_class+"'>";
-                var prev10 = "<li class='mininum'><a class='goto_p10 mininum' href='#'>"+options.prev10+"</a></li>";                
-                var next10 = "<li class='mininum'><a class='goto_n10 mininum' href='#'>"+options.next10+"</a></li>";
-                var prev = "<li><a class='goto_previous' href='#'>"+options.prev+"</a></li>";
-                var next = "<li><a class='goto_next' href='#'>"+options.next+"</a></li>";
+                var first = "<li class='mininum'><a class='goto_first' href='#'>First</a></li>";
+                var last = "<li class='mininum'><a class='goto_last' href='#'>Last</a></li>";
+                var prev10 = "<li class='mininum'><a class='goto_p10 mininum' title='-10' href='#'>"+options.prev10+"</a></li>";                
+                var next10 = "<li class='mininum'><a class='goto_n10 mininum' title='+10' href='#'>"+options.next10+"</a></li>";
+                var prev = "<li><a class='goto_previous' title='-1' href='#'>"+options.prev+"</a></li>";
+                var next = "<li><a class='goto_next' title='+1' href='#'>"+options.next+"</a></li>";
 		var prev_inactive = "<li><a class='inactive'>"+options.prev+"</a></li>";
                 var next_inactive = "<li><a class='inactive'>"+options.next+"</a></li>";
                 var prev10_inactive = "<li class='mininum'><a class='inactive mininum'>"+options.prev10+"</a></li>";
@@ -143,12 +150,24 @@ Options available:
                     for (i = 1; i < Math.ceil(options.buttons/2); i++) { items += create_next(i); }                    
                 }
                 
+                /*
+                if (curr == number_of_pages) { nav_array.push(items); }
+                else if (curr == 1) { nav_array.push(items); }
+                else { nav_array.push(items); }
+                */
+               
+                nav_array.push(items);
                 
-                if (curr == number_of_pages) { nav = start + prev10 + prev + items + next_inactive + next10_inactive + end; } 
-                else if (curr == 1) { nav = start + prev10_inactive + prev_inactive + items + next + next10 + end; }
-                else { nav = start + prev10 + prev + items + next + next10 + end; } 
-
-
+                if (options.show_next_prev == true) { nav_array.push(next); nav_array.unshift(prev); }                
+                if (options.show_next10_prev10 == true) { nav_array.push(next10); nav_array.unshift(prev10); }                
+                if (options.show_first == true) { nav_array.unshift(first); }
+                if (options.show_last == true) { nav_array.push(last); }
+                
+                nav_array.unshift(start);
+                nav_array.push(end);                                
+                nav = nav_array.join(' ');
+                
+                
                 $(".navigation").html(nav);
                 
             }
@@ -164,6 +183,11 @@ Options available:
             $(document).on("click", "a.goto_first", function(e){
                 e.preventDefault();
                 prepare_pagination(1);
+            });
+            $(document).on("click", "a.goto_last", function(e){
+                e.preventDefault();
+                var newcurr = $("#total_pages").html();
+                prepare_pagination(newcurr); 
             });
             $(document).on("click", "a.goto_p10", function(e){
                 e.preventDefault();
@@ -183,12 +207,14 @@ Options available:
             });
             $(document).on("click", "a.goto_next", function(e){
                 e.preventDefault();
-                var newcurr = parseInt($("#pagination").find("a.active").attr("title")) + 1;                
+                var newcurr = parseInt($("#pagination").find("a.active").attr("title")) + 1;   
+                if (number_of_pages < newcurr) { newcurr = number_of_pages }
                 prepare_pagination(newcurr);               
             });
             $(document).on("click", "a.goto_previous", function(e){
                 e.preventDefault();
-                var newcurr = parseInt($("#pagination").find("a.active").attr("title")) - 1;                
+                var newcurr = parseInt($("#pagination").find("a.active").attr("title")) - 1;  
+                if (newcurr < 1) { newcurr = 1 } 
                 prepare_pagination(newcurr);
             });
         });

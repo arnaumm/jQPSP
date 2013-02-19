@@ -1,4 +1,4 @@
-// jQPSP - jQuery Pagination System Plugin v0.1
+// jQPSP - jQuery Pagination System Plugin v0.2 19/02/2013 17:00
 // based on jPaginate by Angel Grablev
 // Dual license under MIT and GPL
 
@@ -10,56 +10,64 @@ Options available:
 
     items = number of items per page on pagination
     next = text inside next button
-    previous = text inside previous button
+    prev = text inside previous button
+    next10 = 
+    prev10 = 
     active = active link class
     pagination_class = pagination element class
 */
 
 
 (function($){
-    $.fn.jPaginate = function(options) {
+    $.fn.jQPSP = function(options) {
 
         var defaults = {
+            uniform: true,
+            buttons: 10,
             items: 4,
             next: ">",
-            previous: "<",
+            prev: "<",
+            next10: ">>",
+            prev10: "<<",
             active: "active",
-            pagination_class: "pagination",
+            pagination_class: "pagination"           
         };
 
         var options = $.extend(defaults, options);
 
         return this.each(function() {
-            // object is the selected pagination element list
+
             obj = $(this);
-            // this is how you call the option passed in by plugin of items
+
             var show_per_page = options.items;
-            //getting the amount of elements inside parent element
             var number_of_items = obj.children().size();
-            //calculate the number of pages we are going to have
             var number_of_pages = Math.ceil(number_of_items/show_per_page);
             
-            //create the pages of the pagination
             var array_of_elements = [];
-            var numP = 0;
-            var nexP = show_per_page;
-            //loop through all pages and assign elements into array
-            for (i=1;i<=number_of_pages;i++)
-            {    
-                array_of_elements[i] = obj.children().slice(numP, nexP);
-                numP += show_per_page;
-                nexP += show_per_page;
+            var start = 0;
+            var offset = show_per_page;
+
+            for (i=1;i<=number_of_pages;i++) {    
+                
+                array_of_elements[i] = obj.children().slice(start, offset);
+                start += show_per_page;
+                offset += show_per_page;
+                
             }
             
-            // display first page and set first page div
+            
+            $('body').append('<div id="current_page" style="display:none"></div>');
+            $('body').append('<div id="total_pages" style="display:none"></div>');
+
 
             if ($("#current_page").text().length > 0) {
                 showPage($("#current_page").text());
-                createPagination($("#current_page").text());
-            } else {
+                createPagination($("#current_page").text());                
+            } else {                
                 showPage(1);
                 createPagination(1);
-                $("#current_page").html(1);
+                $("#current_page").html(1);   
+                $("#total_pages").html(number_of_pages); 
             }
 
             //show selected page
@@ -71,104 +79,119 @@ Options available:
             // create the navigation for the pagination 
             function createPagination(curr) {
 
-                var items = "", nav = "";
+                var items = "";
+                var nav = "";
+                var next_num = new Array();
+                var prev_num = new Array();
+                
                 var start = "<div class='pagination pagination-centered'><ul id='pagination' class='"+options.pagination_class+"'>";
-                var previous10 = "<li class='mininum'><a class='goto_p10 mininum' href='#'><<</a></li>";
-                var previous10_inactive = "<li class='mininum'><a class='inactive mininum'><<</a></li>";
-                var next10 = "<li class='mininum'><a class='goto_n10 mininum' href='#'>>></a></li>";
-                var previous = "<li><a class='goto_previous' href='#'>"+options.previous+"</a></li>";
+                var prev10 = "<li class='mininum'><a class='goto_p10 mininum' href='#'>"+options.prev10+"</a></li>";                
+                var next10 = "<li class='mininum'><a class='goto_n10 mininum' href='#'>"+options.next10+"</a></li>";
+                var prev = "<li><a class='goto_previous' href='#'>"+options.prev+"</a></li>";
                 var next = "<li><a class='goto_next' href='#'>"+options.next+"</a></li>";
-				var previous_inactive = "<li><a class='inactive'>"+options.previous+"</a></li>";
+		var prev_inactive = "<li><a class='inactive'>"+options.prev+"</a></li>";
                 var next_inactive = "<li><a class='inactive'>"+options.next+"</a></li>";
+                var prev10_inactive = "<li class='mininum'><a class='inactive mininum'>"+options.prev10+"</a></li>";
+                var next10_inactive = "<li class='mininum'><a class='inactive mininum'>"+options.next10+"</a></li>";
                 var end = "</ul>";
-                var after = number_of_pages - options.after + 1;
+                
+                
+                for (i = 0; i < options.buttons; i++) {
+                                        
+                    //next_num[i] = (options.uniform == true && (parseInt(curr) + i) < 10) ? '0'+(parseInt(curr) + i) : (parseInt(curr) + i);
+                    //prev_num[i] = (options.uniform == true && (parseInt(curr) - i) < 10) ? '0'+(parseInt(curr) - i) : (parseInt(curr) - i);                 
 
-                next_num = parseInt(curr) + 1;
-                next2_num = parseInt(curr) + 2;
-                prev_num = parseInt(curr) - 1;
-
-                if (next_num < 10) { next_num = '0' + next_num }
-                if (next2_num < 10) { next2_num = '0' + next2_num }
-                if (prev_num < 10) { prev_num = '0' + prev_num }
-                if (curr < 10) { curr_num = '0' + curr }
-                else { curr_num = curr }
-
-                if (curr == 1) {
-                    items += '<li class="active"><a class="'+options.active+'" title="'+curr+'">'+curr_num+'</a></li>';
-                    items += '<li><a href="#" class="goto" title="'+(parseInt(curr)+1)+'">'+(next_num)+'</a></li>';
-                    items += '<li><a href="#" class="goto" title="'+(parseInt(curr)+2)+'">'+(next2_num)+'</a></li>';
-                } else {
-                    items += '<li><a href="#" class="goto" title="'+(parseInt(curr)-1)+'">'+(prev_num)+'</a></li>';
-                    items += '<li class="active"><a class="'+options.active+'" title="'+curr+'">'+curr_num+'</a></li>';
-                    items += '<li><a href="#" class="goto" title="'+(parseInt(curr)+1)+'">'+(next_num)+'</a></li>';
+                    next_num[i] = parseInt(curr) + i;
+                    prev_num[i] = parseInt(curr) - i;
+                    
+                    if (options.uniform == true && next_num[i] < 10) { next_num[i] = '0'+next_num[i]; }                                    
+                    if (options.uniform == true && prev_num[i] < 10) { prev_num[i] = '0'+prev_num[i]; }                  
+  
                 }
-
-                if (curr != 1 && curr != number_of_pages && curr > 10) {
-                    nav = start + previous10 + previous + items + next + next10 + end;
-                } else if (curr == number_of_pages){
-                    nav = start + previous10 + previous + items + next_inactive + next10 + end;
-                } else if (curr == 1) {
-                    nav = start + previous10_inactive + previous_inactive + items + next + next10 + end;
-                } else if (curr != 1 && curr < 11) {
-                    nav = start + previous10_inactive + previous + items + next + next10 + end;
+                
+                
+                var curr_num = (options.uniform ==true && curr < 10) ? ('0' + curr) : curr;
+                
+                
+                function create_prev(i) {
+                    return '<li><a href="#" class="goto" title="'+(parseInt(curr)-i)+'">'+prev_num[i]+'</a></li>';                    
                 }
+                function create_next(i) {
+                    return '<li><a href="#" class="goto" title="'+(parseInt(curr)+i)+'">'+next_num[i]+'</a></li>';                    
+                }
+                function create_curr() {
+                    return '<li class="active"><a class="'+options.active+'" title="'+curr+'">'+curr_num+'</a></li>';                    
+                }
+                
+               
+                if (curr < Math.ceil(options.buttons/2)) 
+                {                                        
+                    for (i = (curr - 1)  ; i > 0; i--) { items += create_prev(i); }                                                                                                    
+                    items += create_curr();                                                            
+                    for (i = 1; i < Math.ceil(options.buttons - curr); i++) { items += create_next(i); }                    
+                } 
+                else if ( curr > number_of_pages - (Math.ceil((options.buttons/2)-1)) ) 
+                {
+                    for (i = options.buttons - (number_of_pages - curr + 2)  ; i > 0; i--) { items += create_prev(i); }                                         
+                    items += create_curr();                                                            
+                    for (i = 1; i <= (number_of_pages - curr); i++) { items += create_next(i); }                                           
+                } 
+                else 
+                {                    
+                    for (i = Math.ceil((options.buttons/2)-1) ; i > 0; i--) { items += create_prev(i); }                                         
+                    items += create_curr();                                        
+                    for (i = 1; i < Math.ceil(options.buttons/2); i++) { items += create_next(i); }                    
+                }
+                
+                
+                if (curr == number_of_pages) { nav = start + prev10 + prev + items + next_inactive + next10_inactive + end; } 
+                else if (curr == 1) { nav = start + prev10_inactive + prev_inactive + items + next + next10 + end; }
+                else { nav = start + prev10 + prev + items + next + next10 + end; } 
+
 
                 $(".navigation").html(nav);
+                
+            }
+            
+            function prepare_pagination(x) {                
+                $("#current_page").html(x);
+                showPage(x);
+                $(".pagination").remove();
+                createPagination(x);                               
             }
 			
-            // handle click on pagination
+            // pagination handlers
             $(document).on("click", "a.goto_first", function(e){
                 e.preventDefault();
-                showPage(1);
-				set_cookie( "current", 1);
-                $(".pagination").remove();
-                createPagination(1);
+                prepare_pagination(1);
             });
             $(document).on("click", "a.goto_p10", function(e){
                 e.preventDefault();
-                var act = "."+options.active;
-                var newcurr = parseInt($("#pagination").find("a.active").attr("title")) - 10;
-                $("#current_page").html(newcurr);
-				showPage(newcurr);
-                $(".pagination").remove();
-                createPagination(newcurr);
+                var newcurr = parseInt($("#pagination").find("a.active").attr("title")) - 10;                
+                if (newcurr < 1) { newcurr = 1 }                
+                prepare_pagination(newcurr);               
             });
             $(document).on("click", "a.goto_n10", function(e){
                 e.preventDefault();
-                var act = "."+options.active;
-                var newcurr = parseInt($("#pagination").find("a.active").attr("title")) + 10;
-                $("#current_page").html(newcurr);
-				showPage(newcurr);
-                $(".pagination").remove();
-                createPagination(newcurr);
+                var newcurr = parseInt($("#pagination").find("a.active").attr("title")) + 10;                
+                if (number_of_pages < newcurr) { newcurr = number_of_pages }                 
+                prepare_pagination(newcurr);
             });
             $(document).on("click", "a.goto", function(e){
-                e.preventDefault();
-                showPage($(this).attr("title"));
-                $("#current_page").html($(this).attr("title"));
-                $(".pagination").remove();
-                createPagination($(this).attr("title"));
+                e.preventDefault();                
+                prepare_pagination($(this).attr("title"));
             });
             $(document).on("click", "a.goto_next", function(e){
                 e.preventDefault();
-                var act = "."+options.active;
-                var newcurr = parseInt($("#pagination").find("a.active").attr("title")) + 1;
-                $("#current_page").html(newcurr);
-				showPage(newcurr);
-                $(".pagination").remove();
-                createPagination(newcurr);
+                var newcurr = parseInt($("#pagination").find("a.active").attr("title")) + 1;                
+                prepare_pagination(newcurr);               
             });
             $(document).on("click", "a.goto_previous", function(e){
                 e.preventDefault();
-                var act = "."+options.active;
-                var newcurr = parseInt($("#pagination").find("a.active").attr("title")) - 1;
-                $("#current_page").html(newcurr);
-                showPage(newcurr);
-                $(".pagination").remove();
-                createPagination(newcurr);
+                var newcurr = parseInt($("#pagination").find("a.active").attr("title")) - 1;                
+                prepare_pagination(newcurr);
             });
         });
-
     };
-
+    
 })(jQuery);

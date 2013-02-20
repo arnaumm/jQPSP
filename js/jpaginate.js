@@ -1,20 +1,29 @@
-// jQPSP - jQuery Pagination System Plugin v0.2 19/02/2013 18:45
+// jQPSP - jQuery Pagination System Plugin v0.2 20/02/2013 18:40
 // based on jPaginate by Angel Grablev
 // Dual license under MIT and GPL
 
 /*
 Usage:
-    $("#content").jPaginate();
+
+    Apply the jQPSP() function to the container of the content to be paged.
+    Example: $("#content").jQPSP();
 
 Options available:
 
-    items = number of items per page on pagination
-    next = text inside next button
-    prev = text inside previous button
-    next10 = 
-    prev10 = 
-    active = active link class
-    pagination_class = pagination element class
+    01  uniform = 1 to 9 numbers will have two digits (eg. 1 -> 01)
+    02  buttons = total of buttons to display
+    03  items = number of items per page on pagination
+    04  jump = size of the jump to be made
+    05  next = text inside next button
+    06  prev = text inside previous button
+    07  next_jump = text inside next_jump button
+    08  prev_jump = text inside prev_jump button
+    09  show_next_prev = switch on/off the next and previous buttons
+    10  show_next_jump_prev_jump = switch on/off the jump buttons
+    11  show_first = displays the first page button 
+    12  show_last = displays the last page button
+    13  active = active link class
+    14  pagination_class = pagination element class
 */
 
 
@@ -22,19 +31,14 @@ Options available:
     $.fn.jQPSP = function(options) {
 
         var defaults = {
-            uniform: true,
-            buttons: 10,
-            items: 4,
-            next: ">",
-            prev: "<",
-            next10: ">>",
-            prev10: "<<",
-            active: "active",
-            pagination_class: "pagination", 
-            show_next_prev: true,
-            show_next10_prev10: true,
-            show_first: false,
-            show_last: false
+            uniform: true,          buttons: 10,
+            items: 4,               jump: 10,
+            first: "First",         last: "Last",
+            next: ">",              prev: "<",
+            next_jump: ">>",        prev_jump: "<<",
+            active: "active",       pagination_class: "pagination", 
+            show_next_prev: true,   show_next_jump_prev_jump: true,
+            show_first: false,      show_last: false
         };
 
         var options = $.extend(defaults, options);
@@ -82,6 +86,8 @@ Options available:
             
             // create the navigation for the pagination 
             function createPagination(curr) {
+                
+                curr = parseInt(curr);
 
                 var items = "";
                 var nav = "";
@@ -90,30 +96,33 @@ Options available:
                 var prev_num = new Array();
                 
                 var start = "<div class='pagination pagination-centered'><ul id='pagination' class='"+options.pagination_class+"'>";
-                var first = "<li class='mininum'><a class='goto_first' href='#'>First</a></li>";
-                var last = "<li class='mininum'><a class='goto_last' href='#'>Last</a></li>";
-                var prev10 = "<li class='mininum'><a class='goto_p10 mininum' title='-10' href='#'>"+options.prev10+"</a></li>";                
-                var next10 = "<li class='mininum'><a class='goto_n10 mininum' title='+10' href='#'>"+options.next10+"</a></li>";
-                var prev = "<li><a class='goto_previous' title='-1' href='#'>"+options.prev+"</a></li>";
-                var next = "<li><a class='goto_next' title='+1' href='#'>"+options.next+"</a></li>";
-		var prev_inactive = "<li><a class='inactive'>"+options.prev+"</a></li>";
+                
+                var first = "<li><a class='goto_first' href='#'>"+options.first+"</a></li>";                
+                var last = "<li><a class='goto_last' href='#'>"+options.last+"</a></li>";
+                
+                var prev_jump = "<li><a class='goto_prev_jump' alt='"+(curr - options.jump)+"' title='"+options.jump+"' href='#'>"+options.prev_jump+"</a></li>";                
+                var next_jump = "<li><a class='goto_next_jump' alt='"+(curr + options.jump)+"' title='"+options.jump+"' href='#'>"+options.next_jump+"</a></li>";
+                
+                var prev = "<li><a class='goto_prev' alt='"+(curr - 1)+"'title='-1' href='#'>"+options.prev+"</a></li>";
+                var next = "<li><a class='goto_next' alt='"+(curr + 1)+"'title='+1' href='#'>"+options.next+"</a></li>";
+                
+                var prev_inactive = "<li><a class='inactive'>"+options.prev+"</a></li>";
                 var next_inactive = "<li><a class='inactive'>"+options.next+"</a></li>";
-                var prev10_inactive = "<li class='mininum'><a class='inactive mininum'>"+options.prev10+"</a></li>";
-                var next10_inactive = "<li class='mininum'><a class='inactive mininum'>"+options.next10+"</a></li>";
-                var end = "</ul>";
+                
+                var prev_jump_inactive = "<li class='mininum'><a class='inactive'>"+options.prev_jump+"</a></li>";
+                var next_jump_inactive = "<li class='mininum'><a class='inactive'>"+options.next_jump+"</a></li>";
+                
+                var end = "</ul></div>";
                 
                 
-                for (i = 0; i < options.buttons; i++) {
-                                        
-                    //next_num[i] = (options.uniform == true && (parseInt(curr) + i) < 10) ? '0'+(parseInt(curr) + i) : (parseInt(curr) + i);
-                    //prev_num[i] = (options.uniform == true && (parseInt(curr) - i) < 10) ? '0'+(parseInt(curr) - i) : (parseInt(curr) - i);                 
+                for (i = 0; i < options.buttons; i++) {                                                            
 
                     next_num[i] = parseInt(curr) + i;
                     prev_num[i] = parseInt(curr) - i;
                     
-                    if (options.uniform == true && next_num[i] < 10) { next_num[i] = '0'+next_num[i]; }                                    
-                    if (options.uniform == true && prev_num[i] < 10) { prev_num[i] = '0'+prev_num[i]; }                  
-  
+                    if (options.uniform == true && next_num[i] < 10) { next_num[i] = '0'+next_num[i]; }
+                    if (options.uniform == true && prev_num[i] < 10) { prev_num[i] = '0'+prev_num[i]; }
+                    
                 }
                 
                 
@@ -149,17 +158,12 @@ Options available:
                     items += create_curr();                                        
                     for (i = 1; i < Math.ceil(options.buttons/2); i++) { items += create_next(i); }                    
                 }
-                
-                /*
-                if (curr == number_of_pages) { nav_array.push(items); }
-                else if (curr == 1) { nav_array.push(items); }
-                else { nav_array.push(items); }
-                */
-               
+
+
                 nav_array.push(items);
                 
                 if (options.show_next_prev == true) { nav_array.push(next); nav_array.unshift(prev); }                
-                if (options.show_next10_prev10 == true) { nav_array.push(next10); nav_array.unshift(prev10); }                
+                if (options.show_next_jump_prev_jump == true) { nav_array.push(next_jump); nav_array.unshift(prev_jump); }                
                 if (options.show_first == true) { nav_array.unshift(first); }
                 if (options.show_last == true) { nav_array.push(last); }
                 
@@ -178,6 +182,13 @@ Options available:
                 $(".pagination").remove();
                 createPagination(x);                               
             }
+            
+            var clicks = new Array();
+            clicks.push('a.goto_first','a.goto_last','a.goto_prev_jump','a.goto_next_jump','a.goto','a.goto_next','a.goto_prev');
+            
+            clicks.forEach(function(item) {
+                $(document).off("click", item);
+            });
 			
             // pagination handlers
             $(document).on("click", "a.goto_first", function(e){
@@ -189,15 +200,15 @@ Options available:
                 var newcurr = $("#total_pages").html();
                 prepare_pagination(newcurr); 
             });
-            $(document).on("click", "a.goto_p10", function(e){
-                e.preventDefault();
-                var newcurr = parseInt($("#pagination").find("a.active").attr("title")) - 10;                
+            $(document).on("click", "a.goto_prev_jump", function(e){
+                e.preventDefault();              
+                var newcurr = $(this).attr("alt");
                 if (newcurr < 1) { newcurr = 1 }                
                 prepare_pagination(newcurr);               
             });
-            $(document).on("click", "a.goto_n10", function(e){
-                e.preventDefault();
-                var newcurr = parseInt($("#pagination").find("a.active").attr("title")) + 10;                
+            $(document).on("click", "a.goto_next_jump", function(e){
+                e.preventDefault();              
+                var newcurr = $(this).attr("alt");
                 if (number_of_pages < newcurr) { newcurr = number_of_pages }                 
                 prepare_pagination(newcurr);
             });
@@ -207,13 +218,13 @@ Options available:
             });
             $(document).on("click", "a.goto_next", function(e){
                 e.preventDefault();
-                var newcurr = parseInt($("#pagination").find("a.active").attr("title")) + 1;   
+                var newcurr = $(this).attr("alt");   
                 if (number_of_pages < newcurr) { newcurr = number_of_pages }
                 prepare_pagination(newcurr);               
             });
-            $(document).on("click", "a.goto_previous", function(e){
+            $(document).on("click", "a.goto_prev", function(e){
                 e.preventDefault();
-                var newcurr = parseInt($("#pagination").find("a.active").attr("title")) - 1;  
+                var newcurr = $(this).attr("alt"); 
                 if (newcurr < 1) { newcurr = 1 } 
                 prepare_pagination(newcurr);
             });
